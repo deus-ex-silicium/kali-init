@@ -1,0 +1,19 @@
+---
+- name: update apt
+  become: true
+  apt: update_cache=true cache_valid_time=86400 #day
+
+- name: download rust init script
+  get_url:
+    url: "{{ rust_url }}"
+    dest: /tmp/rustup-init.sh
+    mode: 500
+
+- name: install rust
+  command: sh /tmp/rustup-init.sh -y
+
+- name: install rust packages
+  shell: 
+    cmd: source ~/.profile && cargo install --locked {{ item }}
+    executable: /bin/bash
+  with_items: "{{ rust_packages }}"

@@ -1,0 +1,40 @@
+- name: Installing Uncomplicated FireWall (ufw)
+  become: true
+  apt: name=ufw state=present update_cache=true
+- name: Enable ufw logging
+  become: true
+  ufw:
+    logging: on
+- name: Deny all incoming traffic by default
+  become: true
+  ufw:
+    default: deny
+    direction: incoming
+- name: Allow all outgoing traffic by default
+  become: true
+  ufw:
+    default: allow
+    direction: outgoing
+- name: Allow whitelisted connections
+  become: true
+  ufw:
+    rule: allow
+    port: "{{ item.port }}"
+    proto: "{{ item.protocol }}"
+  with_items: "{{ ufw_whitelist }}"
+  when: ufw_whitelist is defined
+- name: Enable firewall
+  become: true
+  ufw:
+    state: enabled
+###############################################################
+- name: Set up kernel parameters
+  become: true
+  sysctl:
+    name: "{{ item.key }}"
+    value: "{{ item.value }}"
+    state: present
+    reload: true
+  with_dict: "{{ sysctl_rules }}"
+  when: sysctl_rules is defined
+  tags: [sysctl]

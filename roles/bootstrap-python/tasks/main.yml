@@ -1,0 +1,96 @@
+---
+- name: check if miniconda exists
+  stat: 
+    path: "{{ ansible_env.HOME }}/.miniconda"
+  register: miniconda
+
+- name: download miniconda installation script
+  get_url: 
+    url: https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    dest: ~/miniconda.sh
+    mode: '0550'
+  when: miniconda.stat.exists == false
+
+- name: install miniconda
+  command: ~/miniconda.sh -b -p $HOME/.miniconda
+  args:
+    creates: "{{ ansible_env.HOME }}/.miniconda"
+  when: miniconda.stat.exists == false
+
+- name: clean installation file
+  file: path=~/miniconda.sh state=absent
+  when: miniconda.stat.exists == false
+
+- name: set conda variable
+  set_fact:
+    conda: "{{ ansible_env.HOME }}/.miniconda/bin/conda"
+
+- name: create virtual enviroments
+  command: "{{ conda }} create -y -n {{ item.name }} python={{ item.python_version }} pip"
+  args:
+    creates: "{{ ansible_env.HOME }}/.miniconda/envs/{{ item.name }}"
+  when: item.name != "base"
+  with_items: "{{ venvs }}"
+
+- name: install virtual enviroment packages
+  shell: eval "$({{ conda }} shell.posix activate {{ item.name }})" && pip install {{ item.pip_packages | join(' ') }}
+  args:
+    executable: /bin/bash
+  with_items: "{{ venvs }}"
+
+
+# - name: Add python apt repository
+#   become: true
+#   apt_repository: repo={{python_ppa}} update_cache=yes
+#   when: python_ppa is defined and python_ppa != False and python_ppa != ""
+
+# - name: Install python
+#   become: true
+#   apt: name=python{{item}} state=present
+#   with_items: "{{ python_version }}"
+  
+# - name: Install python-dev
+#   become: true
+#   apt: name=python{{item}}-dev state=present
+#   with_items: "{{ python_version }}"
+  
+# - name: Install python-distutils
+#   become: true
+#   apt: name=python{{item}}-distutils state=present
+#   when: item >= 3
+#   with_items: "{{ python_version }}"
+
+# - name: Install python3-pip
+#   become: true
+#   apt: name=python3-pip state=present
+#   when: python_version >= 3
+
+# - name: Install python-pip
+#   become: true
+#   apt: name=python-pip state=present
+#   when: python_version < 3
+
+# - name: Upgrade pip3
+#   pip:
+#     executable: pip3
+#     name: pip
+#     state: latest
+#   when: python_version >= 3
+
+# - name: Install pip3 packages
+#   pip:
+#     executable: pip3
+#     name: "{{ pip_packages }}"
+#   when: python_version >= 3
+
+# - name: Upgrade pip
+#   pip:
+#     executable: pip
+#     name: pip
+#     state: latest
+#   when: python_version < 3
+
+# - name: Install pip packages
+#   pip:
+#     name: "{{ pip_packages }}"
+#   when: python_version < 3

@@ -1,0 +1,19 @@
+---
+path_repos: "{{ ansible_env.HOME }}/repos/"
+path_knowlege_base: "{{ ansible_env.HOME }}/kb/"
+path_zsh_fzf: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/fzf"
+path_zsh_nvm: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/zsh-nvm"
+path_zsh_syntax: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
+path_zsh_suggestion: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+
+url_delta_amd64_deb: https://github.com/dandavison/delta/releases/download/0.3.0/git-delta_0.3.0_amd64.deb
+url_delta_amd32_deb: https://github.com/dandavison/delta/releases/download/0.3.0/git-delta_0.3.0_i386.deb
+url_belta_arm32_deb: https://github.com/dandavison/delta/releases/download/0.3.0/git-delta_0.3.0_armhf.deb
+url_delta_arm64_deb: https://github.com/dandavison/delta/releases/download/0.3.0/delta-0.3.0-arm-unknown-linux-gnueabihf.tar.gz
+# https://dev.yorhel.nl/ncdu
+url_ncdu_amd64: https://dev.yorhel.nl/download/ncdu-linux-x86_64-1.15.1.tar.gz
+url_ncdu_arm64: https://dev.yorhel.nl/download/ncdu-linux-aarch64-1.15.1.tar.gz
+url_ncdu_arm32: https://dev.yorhel.nl/download/ncdu-linux-arm-1.15.1.tar.gz
+url_prettyping: https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping
+url_vimplug: https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+url_tldr: https://gitlab.com/pepa65/tldr-bash-client/raw/master/tldr

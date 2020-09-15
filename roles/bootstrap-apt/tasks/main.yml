@@ -1,0 +1,34 @@
+---
+- name: add sudo for become tasks
+  apt: name=sudo state=present
+  when: ansible_facts.user_id == 'root'
+
+- name: add apt repo
+  become: true
+  apt_repository: repo="{{ item }}" state=present
+  with_items: "{{ apt_repositories }}"
+  register: result
+  when: apt_repositories is defined
+
+- name: add apt key
+  become: true
+  apt_key: "url={{ item.key }} state=present"
+  with_items: "{{ apt_repositories }}"
+  when: item.key is defined
+
+- name: update apt cache
+  become: true
+  apt: update_cache=yes
+
+- name: install packages
+  become: true
+  apt: name="{{ apt_packages }}"
+  when: apt_packages is defined
+
+- name: Remove useless packages from the cache
+  apt: autoclean=yes
+  become: yes
+
+- name: Remove dependencies that are no longer required
+  apt: autoremove=yes
+  become: yes
