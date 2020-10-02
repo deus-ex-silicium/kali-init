@@ -1,8 +1,10 @@
+---
 - name: download firefox archive
   become: true
   unarchive:
     src: https://download.mozilla.org/?product=firefox-latest-ssl&os=linux64&lang=en-US
-    dest: /usr/local/bin/firefox/
+    dest: /usr/local/bin
+    remote_src: yes
 
 - name: find default firefox profile path
   command: find ~/.mozilla/firefox/ -name '*.default'
@@ -13,25 +15,25 @@
 
 - name: download uBlock Origin extension
   get_url:
-    url: https://addons.mozilla.org/firefox/downloads/file/3521827/ublock_origin-1.25.2-an+fx.xpi
+    url: https://addons.mozilla.org/firefox/downloads/file/3649606/ublock_origin-1.30.0-an+fx.xpi
     dest: "{{ ffp.stdout }}/extensions/uBlock0@raymondhill.net.xpi"
     mode: 0600
 
 - name: download Privacy Badger extension
   get_url:
-    url: https://addons.mozilla.org/firefox/downloads/file/3509922/privacy_badger-2020.2.19-an+fx.xpi
+    url: https://addons.mozilla.org/firefox/downloads/file/3631723/privacy_badger-2020.8.25-an+fx.xpi
     dest: "{{ ffp.stdout }}/extensions/jid1-MnnxcxisBPnSXQ@jetpack.xpi"
     mode: 0600
 
 - name: download Tree Style Tabs extension
   get_url:
-    url: https://addons.mozilla.org/firefox/downloads/file/3528257/tree_style_tab_-3.4.7-fx.xpi
+    url: https://addons.mozilla.org/firefox/downloads/file/3651276/tree_style_tab_-3.5.28-fx.xpi
     dest: "{{ ffp.stdout }}/extensions/treestyletab@piro.sakura.ne.jp.xpi"
     mode: 0600
     
 - name: download FoxyProxy extension
   get_url:
-    url: https://addons.mozilla.org/firefox/downloads/file/3476518/foxyproxy_standard-7.4.3-an+fx.xpi
+    url: https://addons.mozilla.org/firefox/downloads/file/3616824/foxyproxy_standard-7.5.1-an+fx.xpi
     dest: "{{ ffp.stdout }}/extensions/foxyproxy@eric.h.jung.xpi"
     mode: 0600
 
@@ -43,6 +45,19 @@
 
 - name: Copy firefox user preferences
   copy: src=user.js dest="{{ ffp.stdout }}"
+
+- name: copy real firefox script
+  become: true
+  copy: 
+    src: firefox.real
+    dest: /usr/bin
+    mode: '0755'
+
+# - name: setup firefox alias
+#   lineinfile:
+#     path: "~/.zsh_aliases"
+#     regexp: '^firefox='
+#     line: firefox="/usr/local/bin/firefox/firefox"
 
 # https://stackoverflow.com/questions/37728865/install-webextensions-on-firefox-from-the-command-line
 # https://gist.github.com/0XDE57/fbd302cef7693e62c769

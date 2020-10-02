@@ -90,7 +90,6 @@
     - .vimrc
     - .tmux.conf
     - .zshrc
-    - .gitconfig
 # Setup tmux
 - name: clone TPM (TMUX Plugin Manager) repo
   git:

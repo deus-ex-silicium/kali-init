@@ -6,6 +6,7 @@ dependencies:
         - zsh
         - htop
         - tmux
+        - xclip
         - vim-nox
         - git
         - fonts-powerline

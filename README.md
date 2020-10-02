@@ -2,17 +2,18 @@
 
 ## Common commands
 ### ping check
-`ansible all -m ping -u [user] -i [ip],`
+`ansible all -m ping -u kali -i 127.0.0.1,`
  
 ### run main.yaml over password based ssh
-`ansible-playbook main.yaml -Kk -u [user] -i [ip],`
+`ansible-playbook main.yaml -Kk -u kali -i 127.0.0.1,`
  - requires that sshpass package is installed
  - requires that main.yaml has hosts: all
 
 ### run main.yaml over key based ssh
-`ansible-playbook main.yaml --private-key [path] -u [user] -i [ip],`
- - requires that main.yaml has hosts: all
+`ansible-playbook main.yaml -K -u kali --private-key ~/.ssh/id_ed25519 -i 127.0.0.1,`
+ - `ssh-keygen -t ed25519 -a 100 & cat ~/.ssh/id_ed25519.pub >> ~/.ssh/authorized_keys`
  - and that key has perms chmod 0400 key.pem
+ - requires that main.yaml has hosts: all
  
  ### Troubleshooting
  `rm -rf ~/.ansible/cp`
@@ -32,6 +33,10 @@
 - improved cli: prettyping, ncdu, delta, tldr, exa, bat
 - pentest tools: gobuster, nmapAutomator, gdb-multiarch and gef
 - and more!
+
+Notes:
+- proper tmux navigation requires MATE Terminal with menu access shortcut keys disabled
+- find out how to deploy keyboard shortcuts, for now manually map Super+T -> mate-terminal -x tmux
 ### setup_firefox
 - installs and configures firefox and plugins
 ### setup_networking
