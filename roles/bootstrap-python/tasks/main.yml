@@ -6,7 +6,7 @@
 
 - name: download miniconda installation script
   get_url: 
-    url: https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
+    url: "{{ miniconda_url }}"
     dest: ~/miniconda.sh
     mode: '0550'
   when: miniconda.stat.exists == false

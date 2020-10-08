@@ -22,6 +22,7 @@ dependencies:
         # pwntools end
         - gdb-multiarch
         - gdbserver
+        - flameshot
   - role: bootstrap-python
     vars:
       venvs:

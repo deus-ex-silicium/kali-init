@@ -127,6 +127,6 @@
     force: true
 # setup gef
 - name: download and install gef gdb wrapper
-  shell: wget -q -O- https://github.com/hugsy/gef/raw/master/scripts/gef.sh | sh
+  shell: wget -q -O- {{ url_gef }} | sh
   args:
     creates: "{{ ansible_env.HOME }}/.gdbinit"
