@@ -26,9 +26,9 @@
     - {url: "https://github.com/zsh-users/zsh-autosuggestions.git", dest: "{{ path_zsh_suggestion }}"}
     - {url: "https://github.com/junegunn/fzf.git", dest: "{{ path_zsh_fzf }}"}
     - {url: "https://github.com/lukechilds/zsh-nvm", dest: "{{ path_zsh_nvm }}"}
-    - {url: "https://github.com/21y4d/nmapAutomator.git", dest: "{{ path_repos }}/nmapAutomator"}
-    - {url: "https://github.com/david942j/one_gadget.git", dest: "{{ path_repos }}/one_gadget"}
-    - {url: "https://github.com/niklasb/libc-database.git", dest: "{{ path_repos }}/libc-database"}
+    - {url: "https://github.com/21y4d/nmapAutomator.git", dest: "{{ path_repos }}nmapAutomator"}
+    - {url: "https://github.com/david942j/one_gadget.git", dest: "{{ path_repos }}one_gadget"}
+    - {url: "https://github.com/niklasb/libc-database.git", dest: "{{ path_repos }}libc-database"}
     
 - name: install FZF plugin
   shell: cd "{{ path_zsh_fzf }}" && ./install --all --xdg --no-bash --no-fish

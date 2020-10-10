@@ -3,14 +3,25 @@
   become: true
   apt: update_cache=true cache_valid_time=86400 #day
 
+- name: check if rust is installed
+  lineinfile:
+    path: "{{ ansible_env.HOME }}/.profile"
+    regexp: '^export PATH=".*HOME\/.cargo\/bin:\$PATH.*"'
+    state: absent
+  check_mode: yes
+  changed_when: false
+  register: rust
+
 - name: download rust init script
   get_url:
     url: "{{ rust_url }}"
     dest: /tmp/rustup-init.sh
     mode: 500
+  when: not rust.found
 
 - name: install rust
   command: sh /tmp/rustup-init.sh -y
+  when: not rust.found
 
 - name: install rust packages
   shell: 

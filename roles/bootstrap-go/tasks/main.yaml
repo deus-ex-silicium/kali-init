@@ -20,20 +20,20 @@
     
 - name: setup go environment
   lineinfile:
-    path: "~/.profile"
+    path: "{{ ansible_env.HOME }}/.profile"
     regexp: "{{ item.key }}"
     line: "{{ item.value }}"
     create: yes
   loop:
   - { key: "^export GOPATH=", value: "export GOPATH=$HOME/go" }
   - { key: "^export GOROOT=", value: "export GOROOT=/usr/local/go/" }
-  - { key: "^export PATH=", value: "export PATH=$PATH:$GOROOT/bin:$GOPATH/bin" }
+  - { key: "^export PATH=.*$GOROOT\/bin:\\$GOPATH\/bin.*", value: 'export PATH="$PATH:$GOROOT/bin:$GOPATH/bin"' }
 
 - name: download go packages
   shell: 
     cmd: source ~/.profile && go get -u {{ item }}
     executable: /bin/bash
-    creates: "{{ ansible_env.HOME }}/go/{{ item }}"
+    creates: "{{ ansible_env.HOME }}/go/src/{{ item }}"
   with_items: "{{ go_packages }}"
 
 - name: install go packages

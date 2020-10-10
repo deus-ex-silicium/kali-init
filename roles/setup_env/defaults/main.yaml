@@ -1,6 +1,5 @@
 ---
 path_repos: "{{ ansible_env.HOME }}/repos/"
-path_knowlege_base: "{{ ansible_env.HOME }}/kb/"
 path_zsh_fzf: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/fzf"
 path_zsh_nvm: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/zsh-nvm"
 path_zsh_syntax: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
