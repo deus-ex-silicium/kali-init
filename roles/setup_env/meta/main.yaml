@@ -25,6 +25,7 @@ dependencies:
         - flameshot
   - role: bootstrap-python
     vars:
+      miniconda_url: https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
       venvs:
         - name: frida
           python_version: 3.7
