@@ -1,7 +1,7 @@
 ---
 - name: check if miniconda exists
   stat: 
-    path: "{{ ansible_env.HOME }}/.miniconda"
+    path: "{{ ansible_facts.user_dir }}/.miniconda"
   register: miniconda
 
 - name: download miniconda installation script
@@ -14,7 +14,7 @@
 - name: install miniconda
   command: ~/miniconda.sh -b -p $HOME/.miniconda
   args:
-    creates: "{{ ansible_env.HOME }}/.miniconda"
+    creates: "{{ ansible_facts.user_dir }}/.miniconda"
   when: miniconda.stat.exists == false
 
 - name: clean installation file
@@ -23,12 +23,12 @@
 
 - name: set conda variable
   set_fact:
-    conda: "{{ ansible_env.HOME }}/.miniconda/bin/conda"
+    conda: "{{ ansible_facts.user_dir }}/.miniconda/bin/conda"
 
 - name: create virtual environments
   command: "{{ conda }} create -y -n {{ item.name }} python={{ item.python_version }} pip"
   args:
-    creates: "{{ ansible_env.HOME }}/.miniconda/envs/{{ item.name }}"
+    creates: "{{ ansible_facts.user_dir }}/.miniconda/envs/{{ item.name }}"
   when: item.name != "base"
   with_items: "{{ venvs }}"
 

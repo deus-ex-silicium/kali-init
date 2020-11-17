@@ -1,9 +1,9 @@
 ---
-path_repos: "{{ ansible_env.HOME }}/repos/"
-path_zsh_fzf: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/fzf"
-path_zsh_nvm: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/zsh-nvm"
-path_zsh_syntax: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
-path_zsh_suggestion: "{{ ansible_env.HOME }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
+path_repos: "{{ ansible_facts.user_dir }}/repos/"
+path_zsh_fzf: "{{ ansible_facts.user_dir }}/.oh-my-zsh/custom/plugins/fzf"
+path_zsh_nvm: "{{ ansible_facts.user_dir }}/.oh-my-zsh/custom/plugins/zsh-nvm"
+path_zsh_syntax: "{{ ansible_facts.user_dir }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
+path_zsh_suggestion: "{{ ansible_facts.user_dir }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
 
 url_delta_amd64_deb: https://github.com/dandavison/delta/releases/download/0.3.0/git-delta_0.3.0_amd64.deb
 url_delta_amd32_deb: https://github.com/dandavison/delta/releases/download/0.3.0/git-delta_0.3.0_i386.deb

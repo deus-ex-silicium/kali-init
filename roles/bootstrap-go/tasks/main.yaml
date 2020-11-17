@@ -20,7 +20,7 @@
     
 - name: setup go environment
   lineinfile:
-    path: "{{ ansible_env.HOME }}/.profile"
+    path: "{{ ansible_facts.user_dir }}/.profile"
     regexp: "{{ item.key }}"
     line: "{{ item.value }}"
     create: yes
@@ -33,11 +33,11 @@
   shell: 
     cmd: source ~/.profile && go get -u {{ item }}
     executable: /bin/bash
-    creates: "{{ ansible_env.HOME }}/go/src/{{ item }}"
+    creates: "{{ ansible_facts.user_dir }}/go/src/{{ item }}"
   with_items: "{{ go_packages }}"
 
 - name: install go packages
   shell: 
-    cmd: source ~/.profile && cd {{ ansible_env.HOME }}/go/src/{{ item }} && go install
+    cmd: source ~/.profile && cd {{ ansible_facts.user_dir }}/go/src/{{ item }} && go install
     executable: /bin/bash
   with_items: "{{ go_packages }}"

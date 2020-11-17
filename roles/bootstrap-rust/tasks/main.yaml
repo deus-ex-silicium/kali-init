@@ -5,7 +5,7 @@
 
 - name: check if rust is installed
   lineinfile:
-    path: "{{ ansible_env.HOME }}/.profile"
+    path: "{{ ansible_facts.user_dir }}/.profile"
     regexp: '^export PATH=".*HOME\/.cargo\/bin:\$PATH.*"'
     state: absent
   check_mode: yes

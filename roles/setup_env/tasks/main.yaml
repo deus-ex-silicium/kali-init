@@ -129,4 +129,4 @@
 - name: download and install gef gdb wrapper
   shell: wget -q -O- {{ url_gef }} | sh
   args:
-    creates: "{{ ansible_env.HOME }}/.gdbinit"
+    creates: "{{ ansible_facts.user_dir }}/.gdbinit"
