@@ -36,6 +36,9 @@ dependencies:
         - name: pwn
           python_version: 3.7
           pip_packages: ['pwntools', 'ropgadget']
+        - name: ansible
+          python_version: 3.8
+          pip_packages: ['ansible', 'awscli', 'boto']
   - role: bootstrap-go
     vars:
       go_packages:
