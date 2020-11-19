@@ -37,8 +37,6 @@
 Notes:
 - proper tmux navigation requires MATE Terminal with menu access shortcut keys disabled
 - find out how to deploy keyboard shortcuts, for now manually map Super+T -> mate-terminal -x tmux
-### setup_firefox
-- installs and configures firefox and plugins
 ### setup_networking
 - installs and configures uncomplicated firewall (ufw)
 
