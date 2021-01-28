@@ -1,0 +1,23 @@
+---
+- hosts: server_mail
+  vars:
+    python_local: ~/.miniconda/envs/ansible/bin/python
+    dns_zone: secunit.pl
+    # lets encrypt
+    common_name: "mail.secunit.pl"
+    subject_alt_name: "DNS:mail.secunit.pl"
+    cert_local: ./roles/mail/files/cert-chain.crt
+    key_local: ./roles/mail/files/key.pem
+    # email server
+    mail_host: mail
+    mail_admin_pass: "{SSHA512}XXX"
+    mail_users:
+      - user: "hr"
+        pass: "{SSHA512}XXX"
+    mail_relay:
+      host: smtp.sendgrid.net
+      user: apikey
+      pass: XXX
+  roles:
+    - letsencrypt-dns-01
+    - mail
