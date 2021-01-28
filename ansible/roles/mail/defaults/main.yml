@@ -1,0 +1,22 @@
+---     
+  dns_zone: example.com
+  mail_host: mail
+  mail_subnet: 10.0.1.0/24
+  # password for admin and webmaster accounts (these are also aliased to from a bunch of other common management accounts)
+  mail_admin_pass: "{SSHA512}n46KuuVnJ4wtWmu5OJtCRVu8JxQ4hQCfHAq/mDGtfo2rQ9GyphlMwE323wSW1YzmfMvNEh8LS98LW5aygf6WtnXuJOk="
+  mail_users: []
+  #   - user: "bot"
+  #     pass: "{SSHA512}XXX"
+  # mail_relay:
+  #     host: smtp.sendgrid.net
+  #     user: apikey
+  #     pass: XXX
+
+
+### QUICKSTART:
+# - requirements: 
+#     - dns_zone exists in AWS console and is reachable (owned by AWS or via delegation)
+#     - python_local has boto3 installed for route53 managment
+# - password generation info https://doc.dovecot.org/configuration_manual/authentication/password_schemes/
+#   - doveadm pw -s SSHA512
+#   - printf "{SSHA512}%s\n" $(printf "%s75ee24e9" $(printf "%s75ee24e9" $(printf "%s%s" $(printf "myexamplepasswordchangeitplz" | xxd -p)) | xxd -r -p | sha512sum | cut -d" " -f1) | xxd -r -p -l 64 | base64 -w0)

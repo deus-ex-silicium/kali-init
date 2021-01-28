@@ -4,6 +4,7 @@
 *.pub
 *.retry
 *.tfstate 
+*.hcl
 *.backup
 .terraform
 ansible_hosts

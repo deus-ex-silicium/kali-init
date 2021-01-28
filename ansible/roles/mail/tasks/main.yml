@@ -1,0 +1,327 @@
+---
+# # # https://arstechnica.com/information-technology/2014/02/how-to-run-your-own-e-mail-server-with-your-own-domain-part-1/2/
+# # # https://arstechnica.com/information-technology/2014/03/taking-e-mail-back-part-2-arming-your-server-with-postfix-dovecot/4/
+# # # https://www.reddit.com/r/linuxquestions/comments/6lwx16/systemd_fails_to_load_spamassassin/dmc508a/
+# # # I hardcoded the SA* variable values into the OPTIONS variable and replaced spamd by debian-spamd in each step (this user indeed was already created). Now I'm able to start spamassassin without any errors (except for some pyzor timeout, which apparently isn't a big deal).
+# # # https://arstechnica.com/information-technology/2014/03/taking-e-mail-back-part-3-fortifying-your-box-against-spammers/3/
+# # # https://arstechnica.com/information-technology/2014/04/taking-e-mail-back-part-4-the-finale-with-webmail-everything-after/
+# # # https://console.aws.amazon.com/support/contacts?#/rdns-limits
+# # mailgun, sendgrid, exchange connector
+
+### apt
+- name: install apt requirements
+  import_role:
+    name: bootstrap-apt
+  vars:
+    apt_packages:
+      - mail-stack-delivery
+      - opendkim
+      - opendkim-tools
+      - spamass-milter
+      - pyzor
+      - razor
+      - libmail-dkim-perl
+
+### tls
+- name: drop cert-chain.crt
+  become: true
+  copy: 
+    src: cert-chain.crt
+    dest: /etc/ssl/private/ssl-chain-mail.pem
+- name: drop key.pem
+  become: true
+  copy: 
+    src: key.pem
+    dest: /etc/ssl/private/ssl-key-decrypted-mail.key
+    mode: 400
+### postfix
+- name: deploy postfix main config
+  become: true
+  template: 
+    src: main.cf.j2
+    dest: /etc/postfix/main.cf
+  notify: restart postfix
+- name: adjust postfix master config
+  become: true
+  lineinfile:
+    path: /etc/postfix/master.cf
+    state: present
+    regexp: "^#submission" 
+    line: "submission inet n       -       -       -       -       smtpd"
+  notify: restart postfix
+- name: append to postfix master config
+  become: true
+  blockinfile:
+    path: /etc/postfix/master.cf
+    insertafter: EOF
+    block: |
+      dovecot   unix  -       n       n       -       -       pipe
+        flags=DRhu user=vmail:vmail argv=/usr/lib/dovecot/deliver
+        -f ${sender} -d ${recipient}
+  notify: restart postfix
+- name: drop postfix configuration files
+  become: true
+  template: 
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: mailname.j2, dest: /etc/mailname }
+    - { src: aliases.j2, dest: /etc/aliases }
+    - { src: canonical.j2, dest: /etc/postfix/canonical }
+    - { src: virtual-mailbox-domains.j2, dest: /etc/postfix/virtual-mailbox-domains }
+    - { src: virtual-mailbox-users.j2, dest: /etc/postfix/virtual-mailbox-users }
+    - { src: virtual.j2, dest: /etc/postfix/virtual }
+  notify:
+    - rehash postfix
+    - restart postfix
+### dovecot
+- name: create vmail group
+  become: true
+  group: gid=5000 name=vmail state=present
+- name: create vmail user
+  become: true
+  user: name=vmail uid=5000 group=vmail state=present home=/var/mail/vmail
+- name: comment keys in 10-ssl.conf 
+  become: true
+  replace:
+    dest: /etc/dovecot/conf.d/10-ssl.conf 
+    regexp: "{{ item.regexp }}" 
+    replace: "{{ item.replace }}"
+  with_items:
+    - { regexp: '^ssl_cert', replace: '#ssl_cert' }
+    - { regexp: '^ssl_key ', replace: '#ssl_key' }
+  notify: restart dovecot
+- name: drop 01-mail-stack-delivery.conf.j2
+  become: true
+  template: 
+    src: 01-mail-stack-delivery.conf.j2
+    dest: /etc/dovecot/conf.d/01-mail-stack-delivery.conf
+  notify: restart dovecot
+- name: comment keys in 10-mail.conf
+  become: true
+  replace:
+    dest: /etc/dovecot/conf.d/10-mail.conf
+    regexp: "^mail_location" 
+    replace: "#mail_location"
+  notify: restart dovecot
+- name: comment keys in 10-auth.conf
+  become: true
+  replace:
+    dest: /etc/dovecot/conf.d/10-auth.conf
+    regexp: "^auth_mechanisms = plain" 
+    replace: "#auth_mechanisms = plain"
+  notify: restart dovecot
+- name: remove passdb and userdb stanza in auth-system.conf.ext
+  become: true
+  replace:
+    path: /etc/dovecot/conf.d/auth-system.conf.ext
+    regexp: '^{{ item }}[^}]+.'
+    replace: ''
+  with_items:
+    - "passdb"
+    - "userdb"
+  notify: restart dovecot
+- name: drop passwd.db
+  become: true
+  template: 
+    src: passwd.db.j2
+    dest: /etc/dovecot/passwd.db
+  notify: restart dovecot
+- name: drop 15-mailboxes.conf
+  become: true
+  copy: 
+    src: 15-mailboxes.conf
+    dest: /etc/dovecot/conf.d/15-mailboxes.conf
+  notify: restart dovecot
+# dovecot -n
+### OpenDKIM
+- name: creating OpenDKIM directory
+  become: true
+  file: path=/etc/opendkim/ state=directory owner=opendkim group=opendkim
+- name: create DKIM key pair
+  become: true
+  command: "opendkim-genkey -r -h sha256 -d {{ vars.mail_host}}.{{ vars.dns_zone }} -s mail"
+  args:
+    chdir: /etc/opendkim/
+    creates: /etc/opendkim/mail.txt
+- name: rename private key
+  become: true
+  command: "mv /etc/opendkim/mail.private /etc/opendkim/mail"
+  args:
+    chdir: /etc/opendkim/
+    creates: /etc/opendkim/mail
+- name: set key ownership
+  become: true
+  file: path={{ item }} owner=opendkim group=opendkim
+  with_items:
+    - /etc/opendkim/mail.txt
+    - /etc/opendkim/mail
+- name: drop opendkim files
+  become: true
+  template: 
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    owner: opendkim
+    group: opendkim
+  with_items:
+    - { src: KeyTable.j2, dest: /etc/opendkim/KeyTable }
+    - { src: SigningTable.j2, dest: /etc/opendkim/SigningTable }
+  notify: restart opendkim
+- name: drop TrustedHosts
+  become: true
+  copy: 
+    owner: opendkim
+    group: opendkim
+    src: TrustedHosts
+    dest: /etc/opendkim/TrustedHosts
+  notify: restart opendkim
+- name: append to /etc/opendkim.conf
+  become: true
+  blockinfile:
+    path: /etc/opendkim.conf
+    insertafter: EOF
+    block: |
+      ## OpenDKIM conf stuff that I'm adding
+      Canonicalization        relaxed/relaxed
+      ExternalIgnoreList      refile:/etc/opendkim/TrustedHosts
+      InternalHosts           refile:/etc/opendkim/TrustedHosts
+      KeyTable                refile:/etc/opendkim/KeyTable
+      SigningTable            refile:/etc/opendkim/SigningTable
+      LogWhy                  Yes
+      PidFile                 /var/run/opendkim/opendkim.pid
+      Socket                  local:/var/spool/postfix/opendkim/opendkim.sock
+      SyslogSuccess           Yes
+      TemporaryDirectory      /var/tmp
+      UserID                  opendkim:opendkim
+  notify: restart opendkim
+- name: creating OpenDKIM socket
+  become: true
+  file: path=/var/spool/postfix/opendkim state=directory owner=opendkim group=root
+- name: adding opendkim to postfix
+  become: true
+  user: name=opendkim groups=postfix append=yes
+- name: adding postfix to opendkim
+  become: true
+  user: name=postfix groups=opendkim append=yes
+
+### spam assassin
+- name: drop spamassassin configs
+  become: true
+  copy: 
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+  with_items:
+    - { src: spamassassin, dest: /etc/default/spamassassin }
+    - { src: spamass-milter, dest: /etc/default/spamass-milter }
+  notify: restart spamassassin
+- name: creating spamd socket
+  become: true
+  file: path=/var/spool/postfix/spamassassin state=directory owner=debian-spamd group=root
+- name: append to /etc/spamassassin/init.pre
+  become: true
+  blockinfile:
+    path: /etc/spamassassin/init.pre
+    insertafter: EOF
+    block: |
+      ## Add TextCat to assist enable language-based filtering
+      loadplugin Mail::SpamAssassin::Plugin::TextCat
+  notify: restart spamassassin
+- name: append to /etc/spamassassin/local.cf
+  become: true
+  blockinfile:
+    path: /etc/spamassassin/local.cf
+    insertbefore: BOF
+    block: |
+      ## Force global Bayesian databases instead of per-user
+      bayes_path /var/lib/spamassassin/.spamassassin/bayes
+      bayes_file_mode 0777
+      ## Ensure non-English e-mails are treated as spam
+      ok_languages en
+      ok_locales en
+      ## Set Pyzor & Razor config file paths
+      razor_config /var/lib/spamassassin/.razor/razor-agent.conf
+      pyzor_options --homedir /var/lib/spamassassin/.pyzor
+  notify: restart spamassassin
+#spamassassin --lint
+- name: update spamassassin rules
+  become: true
+  command: sa-update
+  register: sa_update
+  # ignore_errors: true
+  failed_when: sa_update.rc != 1 and sa_update.rc != 0
+- name: creating global Bayesian filter directory
+  become: true
+  file: path=/var/lib/spamassassin state=directory owner=debian-spamd group=debian-spamd recurse=yes
+- name: creating global Bayesian filter
+  become: true
+  file: path=/var/lib/spamassassin/.spamassassin state=directory owner=debian-spamd group=debian-spamd
+- name: add spamass-milter to spamd group
+  become: true
+  user: name=spamass-milter state=present groups=debian-spamd append=yes
+### razor2 / pyzor
+- name: create spamassassin subdirectories
+  become: true
+  file: path={{ item }} state=directory owner=debian-spamd group=debian-spamd
+  with_items:
+    - /var/lib/spamassassin/.razor
+    - /var/lib/spamassassin/.pyzor
+    - /var/lib/spamassassin/.spamassassin
+# - name: bootstrap pyzor
+#   become: true
+#   command: pyzor --homedir /var/lib/spamassassin/.pyzor discover
+- name: bootstrap razor
+  become: true
+  command: "{{ item.cmd }}"
+  args:
+    creates: "{{ item.creates }}"
+  with_items:
+    - { cmd: razor-admin -home=/var/lib/spamassassin/.razor -discover,
+        creates: /var/lib/spamassassin/.razor/servers.discovery.lst }
+    - { cmd: razor-admin -home=/var/lib/spamassassin/.razor -register,
+        creates: /var/lib/spamassassin/.razor/identity }
+    - { cmd: razor-admin -home=/var/lib/spamassassin/.razor -create,
+        creates: /var/lib/spamassassin/.razor/razor-agent.conf }
+- name: adjust razor config
+  become: true
+  lineinfile:
+    path: /var/lib/spamassassin/.razor/razor-agent.conf
+    state: present
+    regexp: "^razorhome" 
+    line: "razorhome = /var/lib/spamassassin/.razor"
+- name: ensure right ownership
+  become: true
+  file: path=/var/lib/spamassassin/ state=directory owner=debian-spamd group=debian-spamd recurse=yes
+# sa-learn --ham /path/to/your/inbox/on/the/server --progress
+# sa-learn --spam /path/to/directory/of/spam --progress 
+
+### dns
+- name: configure custom mail dns entries
+  include_tasks: "roles/mail/tasks/custom_mail_dns.yml"
+
+### sieve
+- name: create sieve directories
+  become: true
+  file: path={{ item }} state=directory owner=vmail group=vmail
+  with_items:
+    - /var/mail/vmail/sieve-before
+    - /var/mail/vmail/sieve-after
+# sudo sieve-test envelopetest.sieve /var/mail/vmail/bigdinosaur.org/lee/mail/cur/(message) -t - -Tlevel=matching
+- name: drop sieve master filter
+  become: true
+  copy: 
+    src: masterfilter.sieve
+    dest: /var/mail/vmail/sieve-before/masterfilter.sieve
+- name: compile sieve script filter
+  become: true
+  command: "sievec masterfilter.sieve"
+  args:
+    chdir: /var/mail/vmail/sieve-before/
+    creates: /var/mail/vmail/sieve-before/masterfilter.svbin
+- name: ensure filter permissions
+  become: true
+  file: path=/var/mail/vmail/sieve-before/masterfilter.svbin state=file owner=vmail group=vmail
+
+### relay
+- name: configure custom mail relay
+  include_tasks: "roles/mail/tasks/sendgrid_relay.yml"
+  when: vars.mail_relay is defined

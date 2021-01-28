@@ -1,0 +1,59 @@
+---
+- name: get public IP
+  ipify_facts:
+
+- name: add A DNS record
+  delegate_to: 127.0.0.1
+  route53:
+      state: present
+      zone: "{{ vars.dns_zone }}"
+      record: "{{ vars.mail_host }}.{{ vars.dns_zone }}"
+      type: A
+      ttl: 60
+      value: "{{ ansible_facts['ipify_public_ip'] }}"
+      overwrite: yes
+  vars:
+    ansible_python_interpreter: "{{ python_local }}"
+
+- name: add MX DNS record
+  delegate_to: 127.0.0.1
+  route53:
+      state: present
+      zone: "{{ vars.dns_zone }}"
+      record: "{{ vars.dns_zone }}"
+      type: MX
+      ttl: 86400
+      value: "10 {{ vars.mail_host }}.{{ vars.dns_zone }}"
+      overwrite: yes
+  vars:
+    ansible_python_interpreter: "{{ python_local }}"
+
+- name: read DKIM public key
+  become: true
+  slurp: src=/etc/opendkim/mail.txt
+  register: dkim_pub
+- name: add DKIM TXT DNS record
+  delegate_to: 127.0.0.1
+  route53:
+      state: present
+      zone: "{{ vars.dns_zone }}"
+      record: '{{ vars.mail_host }}._domainkey.{{ vars.dns_zone }}'
+      type: TXT
+      ttl: 86400
+      value: "{{ dkim_pub.content | b64decode |  regex_findall('\".*\"') | join(' ') }}"
+      overwrite: yes
+  vars:
+    ansible_python_interpreter: "{{ python_local }}"
+
+- name: add SPF TXT DNS record
+  delegate_to: 127.0.0.1
+  route53:
+      state: present
+      zone: "{{ vars.dns_zone }}"
+      record: "{{ vars.dns_zone }}"
+      type: SPF
+      ttl: 86400
+      value: '"v=spf1 mx a ?all"'
+      overwrite: yes
+  vars:
+    ansible_python_interpreter: "{{ python_local }}"

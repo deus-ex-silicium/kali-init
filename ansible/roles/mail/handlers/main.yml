@@ -1,0 +1,45 @@
+---
+- name: hash aliases
+  become: true
+  command: newaliases
+  listen: rehash postfix
+
+- name: hash postfix configuration files
+  become: true
+  command: "postmap {{ item }}"
+  with_items:
+    - /etc/postfix/canonical
+    - /etc/postfix/virtual-mailbox-domains
+    - /etc/postfix/virtual-mailbox-users
+    - /etc/postfix/virtual
+  listen: rehash postfix
+
+- name: hash sasl_passwd postfix configuration file
+  become: true
+  command: "postmap /etc/postfix/sasl_passwd"
+  listen: rehash sasl_passwd
+
+- name: restart postfix service
+  become: true
+  service: name=postfix state=restarted
+  listen: restart postfix
+
+- name: restart dovecot service
+  become: true
+  service: name=dovecot state=restarted
+  listen: restart dovecot
+
+- name: restart opendkim service
+  become: true
+  service: name=opendkim state=restarted
+  listen: restart opendkim
+
+- name: restart spamassassin service
+  become: true
+  service: name=spamassassin  state=restarted
+  listen: restart spamassassin
+
+- name: restart spamass-milter service
+  become: true
+  service: name=spamass-milter state=restarted
+  listen: restart spamassassin

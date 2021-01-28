@@ -1,0 +1,55 @@
+---
+# https://sendgrid.com/docs/for-developers/sending-email/postfix/
+
+- name: install apt requirements
+  import_role:
+    name: bootstrap-apt
+  vars:
+    apt_packages:
+      - libsasl2-modules
+
+- name: add relay block to /etc/postfix/main.cf
+  become: true
+  lineinfile:
+    path: /etc/postfix/main.cf
+    state: present
+    regexp: "{{ item.regexp }}" 
+    line: "{{ item.line }}"
+  with_items:
+    - { regexp: '^smtp_sasl_auth_enable.*$',
+        line: 'smtp_sasl_auth_enable = yes' }
+    - { regexp: '^smtp_sasl_password_maps.*$',
+        line: 'smtp_sasl_password_maps = hash:/etc/postfix/sasl_passwd' }
+    - { regexp: '^smtp_sasl_security_options.*$',
+        line: 'smtp_sasl_security_options = noanonymous' }
+    - { regexp: '^smtp_sasl_tls_security_options.*$',
+        line: 'smtp_sasl_tls_security_options = noanonymous' }
+    - { regexp: '^smtp_tls_security_level.*$',
+        line: 'smtp_tls_security_level = encrypt' }
+    - { regexp: '^header_size_limit.*$',
+        line: 'header_size_limit = 4096000' }
+    - { regexp: '^relayhost.*$',
+        line: 'relayhost = [{{ vars.mail_relay.host }}]:587' }
+  notify:
+    - rehash postfix
+    - restart postfix
+
+- name: add relay block to /etc/postfix/main.cf
+  become: true
+  lineinfile:
+    path: /etc/postfix/master.cf
+    state: present
+    regexp: '^#\s*tlsmgr.*$'
+    line: "tlsmgr    unix  -       -       y       1000?   1       tlsmgr"
+  notify: restart postfix
+  
+- name: deploy sasl_passwd
+  become: true
+  template: 
+    src: sasl_passwd.j2
+    dest: /etc/postfix/sasl_passwd
+    mode: 600
+  notify: rehash sasl_passwd
+
+
+

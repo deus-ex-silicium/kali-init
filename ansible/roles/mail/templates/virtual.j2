@@ -1,0 +1,10 @@
+{% for x in vars.mail_users %}
+{{ x.user }}@{{ vars.dns_zone }}   {{ x.user }}@{{ vars.dns_zone }}
+{% endfor %}
+admin@{{ vars.dns_zone }}  admin@{{ vars.dns_zone }}
+webmaster@{{ vars.dns_zone }}  webmaster@{{ vars.dns_zone }}
+postmaster@{{ vars.dns_zone }} webmaster@{{ vars.dns_zone }}
+root@mail.{{ vars.dns_zone }}  webmaster@{{ vars.dns_zone }}
+root@{{ vars.dns_zone }}   webmaster@{{ vars.dns_zone }}
+abuse@{{ vars.dns_zone }}  webmaster@{{ vars.dns_zone }}
+hostmaster@{{ vars.dns_zone }} webmaster@{{ vars.dns_zone }}

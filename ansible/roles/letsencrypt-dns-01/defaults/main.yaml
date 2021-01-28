@@ -9,8 +9,8 @@ key_local: "./key.pem"
 
 acme:
   # https://letsencrypt.org/docs/staging-environment/
-  directory: https://acme-staging-v02.api.letsencrypt.org/directory
-  # directory: https://acme-v02.api.letsencrypt.org/directory
+  # directory: https://acme-staging-v02.api.letsencrypt.org/directory
+  directory: https://acme-v02.api.letsencrypt.org/directory
   version: 2
   
 #  QUICKSTART:

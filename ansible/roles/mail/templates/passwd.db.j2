@@ -1,0 +1,5 @@
+{% for x in vars.mail_users %}
+{{ x.user }}@{{ vars.dns_zone }}:{{ x.pass }}
+{% endfor %}
+admin@{{ vars.dns_zone }}:{{ vars.mail_admin_pass }}
+webmaster@{{ vars.dns_zone }}:{{ vars.mail_admin_pass }}
