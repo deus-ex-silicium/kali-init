@@ -1,0 +1,9 @@
+*-key
+*.crt
+*.pem
+*.pub
+*.retry
+*.tfstate 
+*.backup
+.terraform
+ansible_hosts
