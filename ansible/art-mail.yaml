@@ -2,10 +2,10 @@
 - hosts: server_mail
   vars:
     python_local: ~/.miniconda/envs/ansible/bin/python
-    dns_zone: secunit.pl
+    dns_zone: example.com
     # lets encrypt
-    common_name: "mail.secunit.pl"
-    subject_alt_name: "DNS:mail.secunit.pl"
+    common_name: "mail.example.com"
+    subject_alt_name: "DNS:mail.example.com"
     cert_local: ./roles/mail/files/cert-chain.crt
     key_local: ./roles/mail/files/key.pem
     # email server
