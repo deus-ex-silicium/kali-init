@@ -1,0 +1,81 @@
+################## LETS ENCRYPT #################################
+- name: create letsencrypt directory
+  ansible.builtin.file:
+    path: "{{ ansible_facts.user_dir }}/letsencrypt/"
+    state: directory
+
+- name: generate an OpenSSL private key with the default values (4096 bits, RSA)
+  community.crypto.openssl_privatekey:
+    path: "{{ ansible_facts.user_dir }}/letsencrypt/{{ vars.common_name }}.pem"
+
+- name: generate an additional account key
+  community.crypto.openssl_privatekey:
+    path: "{{ ansible_facts.user_dir }}/letsencrypt/account-key.pem"
+
+- name: generate an OpenSSL Certificate Signing Request
+  community.crypto.openssl_csr:
+    path: "{{ ansible_facts.user_dir }}/letsencrypt/{{ vars.common_name }}.csr"
+    privatekey_path: "{{ ansible_facts.user_dir }}/letsencrypt/{{ vars.common_name }}.pem"
+    common_name: "{{ vars.common_name }}"
+    subject_alt_name: "{{ vars.subject_alt_name }}"
+
+- name: create a challenge for domain
+  community.crypto.acme_certificate:
+    account_key_src: "{{ ansible_facts.user_dir }}/letsencrypt/account-key.pem"
+    csr: "{{ ansible_facts.user_dir }}/letsencrypt/{{ vars.common_name }}.csr"
+    dest: "{{ ansible_facts.user_dir }}/letsencrypt/{{ vars.common_name }}.crt"
+    fullchain_dest: "{{ ansible_facts.user_dir }}/letsencrypt/{{ vars.common_name }}-chain.crt"
+    acme_directory: "{{ acme.directory }}"
+    acme_version: "{{ acme.version }}"
+    challenge: "dns-01"
+    terms_agreed: yes
+  register: chall
+
+- name: fullfil DNS challenge with route53
+  delegate_to: 127.0.0.1
+  community.aws.route53:
+    zone: "{{ vars.dns_zone }}"
+    record: "{{ item.key }}"
+    type: TXT
+    ttl: 60
+    state: present
+    overwrite: yes
+    wait: yes
+    # Note: item.value is a list of TXT entries, and route53
+    # requires every entry to be enclosed in quotes
+    value: "{{ item.value | map('regex_replace', '^(.*)$', '\"\\1\"' ) | list }}"
+  loop: "{{ chall.challenge_data_dns | dict2items }}"
+  when: 
+    - chall is changed
+  vars:
+    ansible_python_interpreter: "{{ vars.python_local }}"
+
+- name: validate with Lets Encrypt
+  community.crypto.acme_certificate:
+    account_key_src: "{{ ansible_facts.user_dir }}/letsencrypt/account-key.pem"
+    csr: "{{ ansible_facts.user_dir }}/letsencrypt/{{ vars.common_name }}.csr"
+    dest: "{{ ansible_facts.user_dir }}/letsencrypt/{{ vars.common_name }}.crt"
+    fullchain_dest: "{{ ansible_facts.user_dir }}/letsencrypt/{{ vars.common_name }}-chain.crt"
+    chain_dest: "{{ ansible_facts.user_dir }}/letsencrypt/{{ vars.common_name }}-intermediate.crt"
+    acme_directory: "{{ acme.directory }}"
+    challenge: "dns-01"
+    acme_version: "{{ acme.version }}"
+    terms_agreed: yes
+    data: "{{ chall }}"
+
+- name: delete ACME DNS challenge with route53
+  delegate_to: 127.0.0.1
+  community.aws.route53:
+    zone: "{{ vars.dns_zone }}"
+    record: "{{ item.key }}"
+    type: TXT
+    ttl: 60
+    state: absent
+    overwrite: yes
+    wait: yes
+    # Note: item.value is a list of TXT entries, and route53
+    # requires every entry to be enclosed in quotes
+    value: "{{ item.value | map('regex_replace', '^(.*)$', '\"\\1\"' ) | list }}"
+  loop: "{{ chall.challenge_data_dns | dict2items }}"
+  vars:
+    ansible_python_interpreter: "{{ vars.python_local }}"

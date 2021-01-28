@@ -1,0 +1,21 @@
+---
+- name: check if certificate exists
+  ansible.builtin.stat: path="{{ ansible_facts.user_dir }}/letsencrypt/{{ vars.common_name }}.crt"
+  register: cert
+
+- name: generate certificate
+  include_tasks: "generate-cert.yaml"
+  when: cert.stat.exists == False
+
+- name: download certificate and key locally
+  ansible.builtin.fetch:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    flat: yes
+  when: 
+    - vars.cert_local is defined
+    - vars.key_local is defined
+  loop: 
+    - {src: "{{ ansible_facts.user_dir }}/letsencrypt/{{ vars.common_name }}-chain.crt", dest: "{{ vars.cert_local }}"}
+    - {src: "{{ ansible_facts.user_dir }}/letsencrypt/{{ vars.common_name }}.pem", dest: "{{ vars.key_local }}"}
+

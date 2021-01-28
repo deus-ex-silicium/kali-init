@@ -1,0 +1,22 @@
+---
+dns_zone: example.com
+python_local: ~/.miniconda/envs/ansible/bin/python
+common_name: "server.example.com"
+subject_alt_name: "DNS:*.example.com"
+
+cert_local: "./cert-chain.crt"
+key_local: "./key.pem"
+
+acme:
+  # https://letsencrypt.org/docs/staging-environment/
+  directory: https://acme-staging-v02.api.letsencrypt.org/directory
+  # directory: https://acme-v02.api.letsencrypt.org/directory
+  version: 2
+  
+#  QUICKSTART:
+# - requires (on host): 
+#     - configured aws API token 
+#     - python_local with boto3 pip package installed for aws route53 control
+# - can generate wildcard certificates
+# - outputs files in ~/letsencrypt directory on the ansible managed machine 
+# - outputs files in cert_local and key_local on host
