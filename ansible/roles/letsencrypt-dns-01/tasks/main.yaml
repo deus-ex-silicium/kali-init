@@ -7,15 +7,41 @@
   include_tasks: "generate-cert.yaml"
   when: cert.stat.exists == False
 
-- name: download certificate and key locally
+- name:
+  debug: var=cert_paths
+
+- name: pull key
   ansible.builtin.fetch:
     src: "{{ item.src }}"
     dest: "{{ item.dest }}"
     flat: yes
-  when: 
-    - vars.cert_local is defined
-    - vars.key_local is defined
+  when: cert_paths.key is defined
   loop: 
-    - {src: "{{ ansible_facts.user_dir }}/letsencrypt/{{ vars.common_name }}-chain.crt", dest: "{{ vars.cert_local }}"}
-    - {src: "{{ ansible_facts.user_dir }}/letsencrypt/{{ vars.common_name }}.pem", dest: "{{ vars.key_local }}"}
+    - {src: "{{ ansible_facts.user_dir }}/letsencrypt/{{ vars.common_name }}.pem", dest: "{{ vars.cert_paths.key }}"}
 
+- name: pull chain
+  ansible.builtin.fetch:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    flat: yes
+  when: cert_paths.chain is defined
+  loop: 
+    - {src: "{{ ansible_facts.user_dir }}/letsencrypt/{{ vars.common_name }}-chain.crt", dest: "{{ vars.cert_paths.chain }}"}
+
+- name: pull primary
+  ansible.builtin.fetch:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    flat: yes
+  when: cert_paths.primary is defined
+  loop: 
+    - {src: "{{ ansible_facts.user_dir }}/letsencrypt/{{ vars.common_name }}.crt", dest: "{{ vars.cert_paths.primary }}"}
+
+- name: pull intermediate
+  ansible.builtin.fetch:
+    src: "{{ item.src }}"
+    dest: "{{ item.dest }}"
+    flat: yes
+  when: cert_paths.intermediate is defined
+  loop: 
+    - {src: "{{ ansible_facts.user_dir }}/letsencrypt/{{ vars.common_name }}-intermediate.crt", dest: "{{ vars.cert_paths.intermediate }}"}

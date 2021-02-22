@@ -4,8 +4,11 @@ python_local: ~/.miniconda/envs/ansible/bin/python
 common_name: "server.example.com"
 subject_alt_name: "DNS:*.example.com"
 
-cert_local: "./cert-chain.crt"
-key_local: "./key.pem"
+cert_paths:
+  chain: "./chain.crt"
+  primary: "./primary.crt"
+  intermediate: "./intermediate.crt"
+  key: "./key.pem"
 
 acme:
   # https://letsencrypt.org/docs/staging-environment/
@@ -20,3 +23,6 @@ acme:
 # - can generate wildcard certificates
 # - outputs files in ~/letsencrypt directory on the ansible managed machine 
 # - outputs files in cert_local and key_local on host
+
+
+# csplit chain.crt -s -z --prefix "mycert" --suffix-format="%02d.crt" '/-----BEGIN CERTIFICATE-----/' '{*}'
