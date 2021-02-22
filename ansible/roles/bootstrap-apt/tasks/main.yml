@@ -3,18 +3,18 @@
   apt: name=sudo state=present
   when: ansible_facts.user_id == 'root'
 
-- name: add apt repo
-  become: true
-  apt_repository: repo="{{ item }}" state=present
-  with_items: "{{ apt_repositories }}"
-  register: result
-  when: apt_repositories is defined
-
 - name: add apt key
   become: true
   apt_key: "url={{ item.key }} state=present"
   with_items: "{{ apt_repositories }}"
   when: item.key is defined
+
+- name: add apt repo
+  become: true
+  ansible.builtin.apt_repository: repo="{{ item.repo }}" state=present
+  with_items: "{{ apt_repositories }}"
+  register: result
+  when: apt_repositories is defined
 
 - name: update apt cache
   become: true
