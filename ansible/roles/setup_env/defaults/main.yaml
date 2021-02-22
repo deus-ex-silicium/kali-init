@@ -15,6 +15,5 @@ url_ncdu_arm64: https://dev.yorhel.nl/download/ncdu-linux-aarch64-1.15.1.tar.gz
 url_ncdu_arm32: https://dev.yorhel.nl/download/ncdu-linux-arm-1.15.1.tar.gz
 url_prettyping: https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping
 url_vimplug: https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
-url_tldr: https://gitlab.com/pepa65/tldr-bash-client/raw/master/tldr
 
 url_gef: https://github.com/hugsy/gef/raw/master/scripts/gef.sh

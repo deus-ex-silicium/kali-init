@@ -52,13 +52,12 @@
   become: true
   apt: deb="{{ url_delta_amd32_deb }}"
   when: ansible_architecture == "armv7l"
-# prettyping, tldr
-- name: download prettyping, diff-so-fancy and tldr
+# prettyping
+- name: download prettyping
   become: true
   get_url: url="{{ item.url }}" dest="{{ item.dest }}" mode=0755
   with_items:
     - {url: "{{ url_prettyping }}", dest: "/usr/local/bin/prettyping" }
-    - {url: "{{ url_tldr }}", dest: "/usr/local/bin/tldr" }
 # ncdu
 - name: download ncdu amd64
   become: true
