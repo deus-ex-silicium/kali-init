@@ -5,6 +5,9 @@
 
 - name: generate certificate
   include_tasks: "generate-cert.yaml"
+  args:
+    apply:
+      become: false
   when: cert.stat.exists == False
 
 - name:
