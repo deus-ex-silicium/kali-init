@@ -48,3 +48,4 @@ dependencies:
       rust_packages:
         - exa
         - bat
+        - tealdeer
