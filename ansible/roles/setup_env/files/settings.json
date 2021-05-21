@@ -1,0 +1,17 @@
+{
+    "window.zoomLevel": 1,
+    "editor.fontSize": 12,
+    "terminal.integrated.fontSize": 12,
+    
+    "window.menuBarVisibility": "default",
+    "window.enableMenuBarMnemonics": false,
+    "editor.acceptSuggestionOnCommitCharacter": false,
+
+    "macros": {
+        "execCurLn": [
+            "expandLineSelection",
+            "workbench.action.terminal.runSelectedText",
+            "cancelSelection"
+        ]
+    }
+}

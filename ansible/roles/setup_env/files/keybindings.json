@@ -1,0 +1,19 @@
+// Place your key bindings in this file to override the defaults
+// https://code.visualstudio.com/docs/getstarted/keybindings
+[
+    // custom tmux navigation
+    // https://code.visualstudio.com/docs/editor/integrated-terminal
+    // Toggle between terminal and editor focus
+    {"key": "ctrl+`", "command": "workbench.action.terminal.focus"},
+    {"key": "ctrl+`", "command": "workbench.action.focusActiveEditorGroup", "when": "terminalFocus"},
+    {"key": "ctrl+a c", "command": "workbench.action.terminal.new", "when": "terminalFocus"},
+    {"key": "ctrl+a n", "command": "workbench.action.terminal.focusNext", "when": "terminalFocus"},
+    {"key": "ctrl+a p", "command": "workbench.action.terminal.focusPrevious", "when": "terminalFocus"},
+    {"key": "ctrl+a a", "command": "cursorLineStart"},
+    {"key": "alt+l", "command": "workbench.action.terminal.focusNextPane", "when": "terminalFocus"},
+    {"key": "alt+h", "command": "workbench.action.terminal.focusPreviousPane", "when": "terminalFocus"},
+    {"key": "ctrl+a \\", "command": "workbench.action.terminal.split", "when": "terminalFocus"},
+    {"key": "ctrl+enter", "command": "macros.execCurLn","when": "editorTextFocus && !editorHasSelection"},
+    {"key": "ctrl+`", "command": "workbench.action.terminal.focus"},
+    {"key": "ctrl+`","command": "workbench.action.focusActiveEditorGroup","when": "terminalFocus"}
+]
