@@ -1,0 +1,23 @@
+- name: install required apt packages
+  include_role: 
+    name: ../../kali-init/ansible/roles/bootstrap-apt
+  vars:
+    apt_packages:
+      - vim-nox
+      - fonts-powerline
+
+- name: copy config files
+  copy: src={{ item }} dest="{{ ansible_facts.user_dir }}/{{ item }}"
+  with_items:
+    - .vimrc
+
+- name: create vim-plug directory
+  file: path="{{ ansible_facts.user_dir }}/.vim/autoload/" state=directory
+- name: Download vim-plug
+  get_url: 
+    url: https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
+    dest: "{{ ansible_facts.user_dir }}/.vim/autoload/"
+- name: install vim plugins
+  become_user: "{{ ansible_facts.user_id }}"
+  command: vim +PlugInstall +qall
+

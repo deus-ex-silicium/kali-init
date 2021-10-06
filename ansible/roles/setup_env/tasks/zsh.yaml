@@ -1,0 +1,37 @@
+- name: install required apt packages
+  include_role: 
+    name: ../../kali-init/ansible/roles/bootstrap-apt
+  vars:
+    apt_packages:
+        - zsh
+        - xclip
+
+
+- name: copy config files
+  copy: src={{ item }} dest="{{ ansible_facts.user_dir }}/{{ item }}"
+  with_items:
+    - .zsh_aliases
+    - .zshrc
+
+- name: set zsh as default shell
+  become: true
+  user: 
+    name: "{{ ansible_facts.user_id }}"
+    shell: /bin/zsh
+- name: clone oh-my-zsh repo
+  # core.autocrlf=input prevents https://github.com/robbyrussell/oh-my-zsh/issues/4402
+  command: 'git clone -c core.autocrlf=input --depth=1 https://github.com/robbyrussell/oh-my-zsh.git .oh-my-zsh'
+  args:
+    chdir: "{{ ansible_facts.user_dir }}"
+    creates: "{{ ansible_facts.user_dir }}/.oh-my-zsh"
+
+- name: clone git repos
+  git: repo="{{ item.url }}" dest="{{ item.dest }}" depth=1 force=yes
+  with_items:
+    - {url: "https://github.com/zsh-users/zsh-syntax-highlighting.git", dest: "{{ path_zsh_syntax }}"}
+    - {url: "https://github.com/zsh-users/zsh-autosuggestions.git", dest: "{{ path_zsh_suggestion }}"}
+    - {url: "https://github.com/junegunn/fzf.git", dest: "{{ path_zsh_fzf }}"}
+    - {url: "https://github.com/lukechilds/zsh-nvm", dest: "{{ path_zsh_nvm }}"}
+
+- name: install FZF plugin
+  shell: cd "{{ path_zsh_fzf }}" && ./install --all --xdg --no-bash --no-fish

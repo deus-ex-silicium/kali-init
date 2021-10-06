@@ -3,49 +3,10 @@ dependencies:
   - role: bootstrap-apt
     vars:
       apt_packages:
-        - zsh
-        - htop
-        - tmux
-        - xclip
-        - vim-nox
         - git
-        - fonts-powerline
         - curl
-        - nmap
-        - atool
-        - default-jdk
-        # pwntools deps
-        - python3-dev
-        - libssl-dev
-        - libffi-dev
-        - build-essential
-        # pwntools end
-        - gdb-multiarch
-        - gdbserver
-        - flameshot
-  - role: bootstrap-python
-    vars:
-      miniconda_url: https://repo.anaconda.com/miniconda/Miniconda3-latest-Linux-x86_64.sh
-      venvs:
-        - name: frida
-          python_version: 3.7
-          pip_packages: ['frida-tools']
-        - name: drozer
-          python_version: 2.7
-          pip_packages: ['drozer']
-        - name: pwn
-          python_version: 3.7
-          pip_packages: ['pwntools', 'ropgadget']
-        - name: ansible
-          python_version: 3.8
-          pip_packages: ['ansible', 'awscli', 'boto']
-  - role: bootstrap-go
-    vars:
-      go_packages:
-        - github.com/OJ/gobuster
-  - role: bootstrap-rust
-    vars:
-      rust_packages:
-        - exa
-        - bat
-        - tealdeer
+        - less
+        - htop
+
+
+

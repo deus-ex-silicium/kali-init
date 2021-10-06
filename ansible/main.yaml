@@ -2,7 +2,8 @@
 - hosts: all
   vars:
     - ansible_python_interpreter: /usr/bin/python3
+    - pentest_utils: false
   roles:
     - setup_env
-    - setup_firefox
+    # - setup_firefox
     #- setup_networking

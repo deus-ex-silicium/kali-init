@@ -1,131 +1,67 @@
 ---
-# Create directories
 - name: create directories
   file: path="{{ item }}" state=directory
   with_items:
     - "{{ path_repos }}"
-# remove default vim
-- name: remove vim package (if exists?)
-  apt: name=vim state=absent
-  become: true
-# Configure oh-my-zsh and plugins
-- name: set zsh as default shell
-  become: true
-  user: name="{{ ansible_facts.user_id }}" shell=/bin/zsh
-- name: clone oh-my-zsh repo
-  # core.autocrlf=input prevents https://github.com/robbyrussell/oh-my-zsh/issues/4402
-  command: 'git clone -c core.autocrlf=input --depth=1 https://github.com/robbyrussell/oh-my-zsh.git .oh-my-zsh'
-  args:
-    chdir: "{{ ansible_facts.user_dir }}"
-    creates: "{{ ansible_facts.user_dir }}/.oh-my-zsh"
-# clone public repos
-- name: clone git repos
-  git: repo="{{ item.url }}" dest="{{ item.dest }}" depth=1 force=yes
-  with_items:
-    - {url: "https://github.com/zsh-users/zsh-syntax-highlighting.git", dest: "{{ path_zsh_syntax }}"}
-    - {url: "https://github.com/zsh-users/zsh-autosuggestions.git", dest: "{{ path_zsh_suggestion }}"}
-    - {url: "https://github.com/junegunn/fzf.git", dest: "{{ path_zsh_fzf }}"}
-    - {url: "https://github.com/lukechilds/zsh-nvm", dest: "{{ path_zsh_nvm }}"}
-    - {url: "https://github.com/21y4d/nmapAutomator.git", dest: "{{ path_repos }}nmapAutomator"}
-    - {url: "https://github.com/david942j/one_gadget.git", dest: "{{ path_repos }}one_gadget"}
-    - {url: "https://github.com/niklasb/libc-database.git", dest: "{{ path_repos }}libc-database"}
-    
-- name: install FZF plugin
-  shell: cd "{{ path_zsh_fzf }}" && ./install --all --xdg --no-bash --no-fish
+    - "{{ path_bin }}"
+
+- name: setup rust and rust cli utils
+  include_role:  
+    name: ../../kali-init/ansible/roles/bootstrap-rust
+  vars:
+    rust_packages:
+      - exa
+      - bat
+      - tealdeer
+      - git-delta
+
+- name: set delta as git default
+  blockinfile:
+    create: true
+    path: "{{ ansible_facts.user_dir }}/.gitconfig"
+    block: "{{ lookup('file', '.gitconfig') }}"
+
 ########## remysharper: CLI improved ##########
 # https://remysharp.com/2018/08/23/cli-improved
 ###############################################
-# delta (architecture dependent)
-- name: download and install amd64 delta from .deb
-  become: true
-  apt: deb="{{ url_delta_amd64_deb }}"
-  when: ansible_architecture == "x86_64"
-- name: download and install i386 delta from .deb
-  become: true
-  apt: deb="{{ url_delta_amd32_deb }}"
-  when: ansible_architecture == "i386"
-- name: create arm delta directory
-  become: true
-  apt: deb="{{ url_delta_amd64_deb }}"
-  when: ansible_architecture == "arm64"
-- name: create arm delta directory
-  become: true
-  apt: deb="{{ url_delta_amd32_deb }}"
-  when: ansible_architecture == "armv7l"
 # prettyping
 - name: download prettyping
-  become: true
-  get_url: url="{{ item.url }}" dest="{{ item.dest }}" mode=0755
+  get_url: 
+    url: "https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping"
+    dest: "{{ item.dest }}" 
+    mode: 0755
   with_items:
-    - {url: "{{ url_prettyping }}", dest: "/usr/local/bin/prettyping" }
+    - {url: "{{ url_prettyping }}", dest: "{{ path_bin }}" }
 # ncdu
 - name: download ncdu amd64
-  become: true
   unarchive:
     src: "{{ url_ncdu_amd64 }}"
-    dest: /usr/local/bin/
+    dest: "{{ path_bin }}"
     remote_src: yes
   when: ansible_architecture == "x86_64"
 - name: download ncdu arm64
-  become: true
   unarchive:
     src: "{{ url_ncdu_arm64 }}"
-    dest: /usr/local/bin/
+    dest: "{{ path_bin }}"
     remote_src: yes
   when: ansible_architecture == "arm64"
 - name: download ncdu arm32
-  become: true
   unarchive:
     src: "{{ url_ncdu_arm32 }}"
-    dest: /usr/local/bin/
+    dest: "{{ path_bin }}"
     remote_src: yes
   when: ansible_architecture == "armv7l"
 ####### END CLI IMPROVED #######
-# Copy configuration files
-- name: copy config files
-  copy: src={{ item }} dest="{{ ansible_facts.user_dir }}/{{ item }}"
-  with_items:
-    - .zsh_aliases
-    - .vimrc
-    - .tmux.conf
-    - .zshrc
-# Setup tmux
-- name: clone TPM (TMUX Plugin Manager) repo
-  git:
-    repo: "https://github.com/tmux-plugins/tpm"
-    dest: "{{ ansible_facts.user_dir }}/.tmux/plugins/tpm"
-    depth: 1
-# Setup vim
-- name: create vim-plug directory
-  file: path="{{ ansible_facts.user_dir }}/.vim/autoload/" state=directory
-- name: Download vim-plug
-  get_url: url={{ url_vimplug }} dest="{{ ansible_facts.user_dir }}/.vim/autoload/"
-- name: install vim plugins
-  become_user: "{{ ansible_facts.user_id }}"
-  command: vim +PlugInstall +qall
-# setup nmapAutomator
-- name: download nmap vulners script
-  become: true
-  get_url: 
-    url: https://raw.githubusercontent.com/vulnersCom/nmap-vulners/master/vulners.nse
-    dest: /usr/share/nmap/scripts/vulners.nse
-- name: check nmapautomator permissions
-  file:
-    path: "{{ path_repos }}/nmapAutomator/nmapAutomator.sh"
-    state: file
-    mode: 0750
-- name: refresh nmap scripts
-  become: true
-  command: nmap --script-updatedb
-- name: link nmapAutomator
-  become: true
-  file:
-    src: "{{ path_repos }}/nmapAutomator/nmapAutomator.sh"
-    dest: /usr/local/bin/nmapAutomator
-    state: link
-    force: true
-# setup gef
-- name: download and install gef gdb wrapper
-  shell: wget -q -O- {{ url_gef }} | sh
-  args:
-    creates: "{{ ansible_facts.user_dir }}/.gdbinit"
+
+- name: include vim.yaml tasks
+  include_tasks: "vim.yaml"
+
+- name: include tmux.yaml tasks
+  include_tasks: "tmux.yaml"
+
+- name: include zsh.yaml tasks
+  include_tasks: "zsh.yaml"
+
+- name: conditional pentest-utils.yaml tasks
+  include_tasks: "pentest-utils.yaml"
+  when: pentest_utils
