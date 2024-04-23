@@ -10,7 +10,7 @@
     name: ../../kali-init/ansible/roles/bootstrap-rust
   vars:
     rust_packages:
-      - exa
+      - eza
       - bat
       - tealdeer
       - git-delta

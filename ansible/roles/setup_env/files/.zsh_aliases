@@ -1,6 +1,6 @@
 alias x="exit"
-alias ls="exa"
-alias ll="exa -lagm"
+alias ls="eza"
+alias ll="eza -lagm"
 alias cat="bat"
 alias grep="grep --color=auto"
 alias -g grp="| grep --color=auto -i"
