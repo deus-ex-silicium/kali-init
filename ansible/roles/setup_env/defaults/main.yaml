@@ -1,5 +1,5 @@
 ---
-pentest_utils: true
+pentest_utils: false
 
 
 path_repos: "{{ ansible_facts.user_dir }}/repos/"
