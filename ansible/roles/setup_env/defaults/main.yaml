@@ -1,18 +1,16 @@
 ---
 pentest_utils: false
 
-
 path_repos: "{{ ansible_facts.user_dir }}/repos/"
 path_bin: "{{ ansible_facts.user_dir }}/bin/"
 path_zsh_fzf: "{{ ansible_facts.user_dir }}/.oh-my-zsh/custom/plugins/fzf"
 path_zsh_nvm: "{{ ansible_facts.user_dir }}/.oh-my-zsh/custom/plugins/zsh-nvm"
 path_zsh_syntax: "{{ ansible_facts.user_dir }}/.oh-my-zsh/custom/plugins/zsh-syntax-highlighting"
 path_zsh_suggestion: "{{ ansible_facts.user_dir }}/.oh-my-zsh/custom/plugins/zsh-autosuggestions"
-
 # https://dev.yorhel.nl/ncdu
-url_ncdu_amd64: https://dev.yorhel.nl/download/ncdu-2.2-linux-x86_64.tar.gz
-url_ncdu_arm64: https://dev.yorhel.nl/download/ncdu-2.2-linux-aarch64.tar.gz
-url_ncdu_arm32: https://dev.yorhel.nl/download/ncdu-2.2-linux-arm.tar.gz
-
+url_ncdu_amd64: https://dev.yorhel.nl/download/ncdu-2.3-linux-x86_64.tar.gz
+url_ncdu_arm64: https://dev.yorhel.nl/download/ncdu-2.3-linux-aarch64.tar.gz
+url_ncdu_arm32: https://dev.yorhel.nl/download/ncdu-2.3-linux-arm.tar.gz
 url_prettyping: https://raw.githubusercontent.com/denilsonsa/prettyping/master/prettyping
+url_vimplug: https://raw.githubusercontent.com/junegunn/vim-plug/master/plug.vim
 url_gef: https://github.com/hugsy/gef/raw/master/scripts/gef.sh

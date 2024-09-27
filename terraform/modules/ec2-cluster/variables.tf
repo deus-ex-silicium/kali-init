@@ -40,12 +40,13 @@ variable "ports" {
 }
 variable "ami" {
   type = string
-  # Ubuntu Server 18.04 LTS (HVM), SSD Volume Type
-  default = "ami-04b9e92b5572fa0d1"
+  # https://cloud-images.ubuntu.com/locator/ec2/
+  # us-east-1	Jammy Jellyfish	22.04 LTS	amd64	hvm:ebs-ssd	20230728
+  default = "ami-02675d30b814d1daa"
 }
 variable "instance_type" {
   type = string
-  default = "t2.micro"
+  default = "t3.micro"
 }
 variable "instance_count" {
   type = number
