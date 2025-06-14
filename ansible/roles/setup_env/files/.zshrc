@@ -7,7 +7,7 @@ export MANROFFOPT="-c"
 # Standard plugins can be found in ~/.oh-my-zsh/plugins/*
 # Custom plugins may be added to ~/.oh-my-zsh/custom/plugins/
 #plugins=(git fzf zsh-syntax-highlighting zsh-autosuggestions zsh-nvm)
-plugins=(git fzf zsh-autosuggestions zsh-nvm extract)
+plugins=(git fzf zsh-autosuggestions zsh-nvm extract virtualenv)
 
 # See https://github.com/robbyrussell/oh-my-zsh/wiki/Themes
 ZSH_THEME="amuse"
